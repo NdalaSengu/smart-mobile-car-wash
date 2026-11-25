@@ -92,6 +92,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--mm-navy); letter-spacing
 .hs-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--mm-light); color: var(--mm-blue); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
 .hs-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .hs-text small { color: var(--mm-muted); font-size: .78rem; }
+.hero-service[hidden] { display: none !important; }
 .hs-price { text-align: right; font-weight: 700; color: var(--mm-blue); font-size: 1.1rem; line-height: 1.1; white-space: nowrap; }
 .hs-price small { display: block; font-size: .68rem; font-weight: 500; color: var(--mm-muted); text-transform: uppercase; letter-spacing: .06em; }
 .hero-card-foot { color: rgba(255, 255, 255, .85); font-size: .88rem; text-align: center; padding-top: .5rem; }

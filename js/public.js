@@ -109,6 +109,14 @@ function renderServices() {
     el.setAttribute("aria-busy", "false");
   }
 
+  // Hero card: list the services you actually offer, plus the "from K…" price
+  const nice = (name) => { const n = String(name || "").trim(); return n.charAt(0).toUpperCase() + n.slice(1); };
+  for (const [cat, rowId, listId] of [["car", "heroCar", "heroCarList"], ["home", "heroHome", "heroHomeList"]]) {
+    const names = active.filter((s) => s.category === cat).map((s) => nice(s.name)).filter(Boolean);
+    $("#" + listId).textContent = names.join(" · ");
+    $("#" + rowId).hidden = !names.length;
+  }
+
   // "From K…" prices in the hero card
   for (const [cat, id] of [["car", "heroCarFrom"], ["home", "heroHomeFrom"]]) {
     const prices = active.filter((s) => s.category === cat).map(lowestPrice).filter(Boolean);

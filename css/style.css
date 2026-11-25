@@ -110,8 +110,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--mm-navy); letter-spacing
 .section-light { background: var(--mm-bg); }
 .section-head { text-align: center; max-width: 44rem; margin: 0 auto 3rem; }
 .section-head p { color: var(--mm-muted); font-size: 1.02rem; margin-bottom: 0; }
-.eyebrow { display: inline-flex; align-items: center; gap: .5rem; color: var(--mm-blue); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; margin-bottom: .75rem; }
-.eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--mm-blue); border-radius: 2px; }
+.eyebrow { display: inline-flex; align-items: center; color: var(--mm-blue); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; margin-bottom: .75rem; }
 h2 { font-size: clamp(1.6rem, 4vw, 2.35rem); font-weight: 700; margin-bottom: .75rem; }
 .group-title { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
 .group-title span { width: 40px; height: 40px; border-radius: 12px; background: var(--mm-blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
@@ -252,7 +251,6 @@ td .quote::before { content: none; }
 .section-reviews { background: linear-gradient(160deg, var(--mm-navy) 0%, var(--mm-navy-2) 60%, #0b3f8a 100%); color: #fff; }
 .section-reviews h2 { color: #fff; }
 .section-reviews .eyebrow { color: #9cc3f5; }
-.section-reviews .eyebrow::before { background: #9cc3f5; }
 .review-summary { display: inline-flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; color: rgba(255, 255, 255, .85); font-size: .98rem; }
 .review-summary .score { font-size: 1.6rem; font-weight: 700; color: #fff; line-height: 1; }
 .stars { color: #ffc531; letter-spacing: .08em; white-space: nowrap; }

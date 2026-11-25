@@ -1,6 +1,6 @@
-# Smart-Mobile Care Wash – website + admin
+# Smart-Mobile Car Wash – website + admin
 
-A fast, mobile-first website for **Smart-Mobile Care Wash** (Solwezi, Zambia), with a private admin page where you change prices, photos, service areas, working hours and the FAQ yourself.
+A fast, mobile-first website for **Smart-Mobile Car Wash** (Solwezi, Zambia), with a private admin page where you change prices, photos, service areas, working hours and the FAQ yourself.
 
 - **Public site:** `index.html`. Customers see your services and prices in Kwacha and book through WhatsApp.
 - **Admin:** `admin.html`. Only you can log in.

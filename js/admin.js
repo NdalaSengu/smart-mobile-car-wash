@@ -1,4 +1,4 @@
-// Admin dashboard for Smart-Mobile Care Wash.
+// Admin dashboard for Smart-Mobile Car Wash.
 import { canUseFirebase, getActiveConfig, USE_EMULATORS, FIREBASE_SDK } from "./firebase-config.js";
 import { compressImage, formatBytes } from "./image-utils.js";
 import {

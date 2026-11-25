@@ -2,7 +2,7 @@
 // Firestore the first time and (2) by the public site as a fallback when
 // Firestore cannot be reached.
 
-export const BUSINESS_NAME = "Smart-Mobile Care Wash";
+export const BUSINESS_NAME = "Smart-Mobile Car Wash";
 export const DEFAULT_PHONE = "+260 974 286 757";
 export const DEFAULT_WHATSAPP = "260974286757";
 

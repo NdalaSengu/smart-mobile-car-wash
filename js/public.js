@@ -226,7 +226,7 @@ async function loadGallery() {
     if (!items.length) { grid.innerHTML = emptyGallery(); return; }
     grid.innerHTML = items.map((g, i) => {
       const label = g.label === "before" || g.label === "after" ? g.label : "";
-      const alt = g.caption || `${label ? label + " – " : ""}Smart-Mobile Care Wash work photo ${i + 1}`;
+      const alt = g.caption || `${label ? label + " – " : ""}Smart-Mobile Car Wash work photo ${i + 1}`;
       return `
         <div class="col-6 col-md-4 col-lg-3">
           <button type="button" class="gallery-item" data-index="${i}" aria-label="View photo: ${esc(alt)}">

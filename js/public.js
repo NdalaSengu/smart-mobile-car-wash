@@ -28,6 +28,12 @@ function withTimeout(promise, ms) {
   ]);
 }
 
+// First letter upper-case ("horse only" -> "Horse only"), used for service names everywhere on the site
+function capitalise(text) {
+  const t = String(text ?? "").trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 // ---------------------------------------------------------------- prices
 function priceText(service, sizeKey) {
   if (service.category === "car") {
@@ -110,9 +116,8 @@ function renderServices() {
   }
 
   // Hero card: list the services you actually offer, plus the "from K…" price
-  const nice = (name) => { const n = String(name || "").trim(); return n.charAt(0).toUpperCase() + n.slice(1); };
   for (const [cat, rowId, listId] of [["car", "heroCar", "heroCarList"], ["home", "heroHome", "heroHomeList"]]) {
-    const names = active.filter((s) => s.category === cat).map((s) => nice(s.name)).filter(Boolean);
+    const names = active.filter((s) => s.category === cat).map((s) => s.name).filter(Boolean);
     $("#" + listId).textContent = names.join(" · ");
     $("#" + rowId).hidden = !names.length;
   }
@@ -289,7 +294,7 @@ function starsHtml(rating) {
 
 function reviewCard(r, hidden) {
   const name = String(r.name || "Customer").trim();
-  const meta = [r.area, r.service].filter(Boolean).map(esc).join(" · ");
+  const meta = [r.area, capitalise(r.service)].filter(Boolean).map(esc).join(" · ");
   return `
     <div class="col-md-6 col-lg-4" ${hidden ? "hidden data-more-review" : ""}>
       <figure class="review-card mb-0">
@@ -509,7 +514,10 @@ async function loadFromFirestore() {
     fs.getDoc(fs.doc(state.db, "settings", "business"))
   ]), 10000);
 
-  const services = svcSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const services = svcSnap.docs.map((d) => {
+    const data = d.data();
+    return { id: d.id, ...data, name: capitalise(data.name) };
+  });
   state.services = services.length ? services : DEFAULT_SERVICES;
   if (setSnap.exists()) state.settings = { ...state.settings, ...setSnap.data() };
 }

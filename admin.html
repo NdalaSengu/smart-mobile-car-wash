@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin | Smart-Mobile Care Wash</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <link href="vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="admin-body">
+
+  <!-- ============ LOADING ============ -->
+  <div id="loadingView" class="auth-screen">
+    <div class="text-center text-white">
+      <div class="spinner-border" role="status"></div>
+      <p class="mt-3 mb-0 opacity-75">Loading…</p>
+    </div>
+  </div>
+
+  <!-- ============ SETUP NEEDED ============ -->
+  <div id="setupView" class="auth-screen d-none">
+    <div class="auth-card text-center">
+      <span class="auth-logo"><i class="bi bi-gear-fill"></i></span>
+      <h1 class="h4">Setup needed</h1>
+      <p class="text-muted mb-0">Firebase is not connected yet. Open <code>js/firebase-config.js</code> and paste your Firebase web config (see <code>README.md</code>, step 4).</p>
+    </div>
+  </div>
+
+  <!-- ============ LOGIN ============ -->
+  <div id="loginView" class="auth-screen min-vh-100 d-none">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-11 col-sm-8 col-md-6 col-lg-4 col-xl-3">
+          <div class="card login-card border-0 shadow-lg rounded-4">
+            <div class="card-body p-4">
+              <div class="text-center mb-3">
+                <span class="auth-logo auth-logo-sm"><i class="bi bi-droplet-half"></i></span>
+                <h1 class="h5 fw-semibold mb-1">Admin sign in</h1>
+                <p class="text-muted small mb-0">Smart-Mobile Care Wash</p>
+              </div>
+              <form id="loginForm" novalidate>
+                <div class="form-floating mb-2">
+                  <input id="loginEmail" type="email" class="form-control" placeholder="name@example.com" autocomplete="username" required>
+                  <label for="loginEmail">Email address</label>
+                </div>
+                <div class="form-floating mb-3 position-relative">
+                  <input id="loginPassword" type="password" class="form-control pe-5" placeholder="Password" autocomplete="current-password" required>
+                  <label for="loginPassword">Password</label>
+                  <button type="button" class="btn btn-link pw-toggle" id="pwToggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                </div>
+                <div id="loginError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+                <button class="btn btn-primary w-100 py-2" type="submit" id="loginBtn">Sign in</button>
+                <div class="d-flex justify-content-between align-items-center mt-3 small">
+                  <a class="text-decoration-none text-muted" href="index.html"><i class="bi bi-arrow-left"></i> Website</a>
+                  <button class="btn btn-link btn-sm p-0 text-decoration-none" type="button" id="forgotBtn">Forgot password?</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <p class="text-center text-white-50 small mt-3 mb-0">&copy; Smart-Mobile Care Wash</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIGNED IN, NOT ADMIN ============ -->
+  <div id="notAdminView" class="auth-screen d-none">
+    <div class="auth-card">
+      <div class="text-center mb-3">
+        <span class="auth-logo"><i class="bi bi-shield-exclamation"></i></span>
+        <h1 class="h4 mb-1">Almost there</h1>
+        <p class="text-muted small mb-0">You are signed in, but this account is not set as the admin yet.</p>
+      </div>
+      <label for="myUid" class="form-label small mb-1">Your user UID</label>
+      <div class="input-group mb-3">
+        <input id="myUid" class="form-control font-monospace small" readonly>
+        <button class="btn btn-outline-primary" type="button" id="copyUid"><i class="bi bi-clipboard"></i> Copy</button>
+      </div>
+      <ol class="small ps-3 text-muted">
+        <li>Open the Firebase console → <strong>Firestore Database</strong>.</li>
+        <li>Create collection <code>config</code>, document <code>admin</code>.</li>
+        <li>Add a field <code>uid</code> (string) with the UID above, then save.</li>
+      </ol>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-pill flex-fill" type="button" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Reload</button>
+        <button class="btn btn-outline-secondary btn-pill flex-fill" type="button" id="logoutBtn2"><i class="bi bi-box-arrow-right"></i> Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DASHBOARD (app shell) ============ -->
+  <div id="dashboard" class="d-none app">
+
+    <!-- Sidebar: fixed on desktop, slide-in menu on phones -->
+    <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+      <div class="sidebar-inner">
+        <div class="sidebar-brand">
+          <span class="brand-icon"><i class="bi bi-droplet-half"></i></span>
+          <div class="lh-sm">
+            <strong id="sidebarLabel">Smart-Mobile</strong>
+            <small>Admin panel</small>
+          </div>
+          <button type="button" class="btn-close btn-close-white d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close menu"></button>
+        </div>
+
+        <p class="sidebar-label">Manage</p>
+        <nav class="sidebar-nav" aria-label="Admin sections">
+          <a href="#overview" data-section="overview" class="active"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
+          <a href="#services" data-section="services"><i class="bi bi-tags"></i><span>Prices &amp; services</span><span class="nav-count" id="navCountServices"></span></a>
+          <a href="#photos" data-section="photos"><i class="bi bi-images"></i><span>Photos</span><span class="nav-count" id="navCountPhotos"></span></a>
+          <a href="#reviews" data-section="reviews"><i class="bi bi-chat-heart"></i><span>Reviews</span><span class="nav-count" id="navCountReviews"></span></a>
+          <a href="#business" data-section="business"><i class="bi bi-shop"></i><span>Business info</span></a>
+        </nav>
+
+        <p class="sidebar-label">Website</p>
+        <nav class="sidebar-nav">
+          <a href="index.html" target="_blank" rel="noopener"><i class="bi bi-globe2"></i><span>View website</span><i class="bi bi-box-arrow-up-right ms-auto small opacity-50"></i></a>
+        </nav>
+
+        <div class="sidebar-user">
+          <span class="avatar" id="userAvatar">A</span>
+          <div class="min-w-0 flex-grow-1">
+            <strong class="d-block small">Administrator</strong>
+            <span id="userEmail" class="d-block text-truncate"></span>
+          </div>
+          <button id="logoutBtn" class="btn btn-icon d-none" type="button" title="Log out" aria-label="Log out"><i class="bi bi-box-arrow-right"></i></button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <!-- Top bar -->
+      <header class="topbar">
+        <button class="btn btn-icon btn-icon-light d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Open menu"><i class="bi bi-list"></i></button>
+        <div class="min-w-0">
+          <p class="crumb mb-0">Admin <i class="bi bi-chevron-right"></i> <span id="crumbName">Overview</span></p>
+          <h1 class="h4 mb-0 text-truncate" id="pageTitle">Overview</h1>
+        </div>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span class="status-pill d-none d-md-inline-flex"><span class="dot"></span> Live</span>
+          <a class="btn btn-outline-primary btn-sm btn-pill px-3" href="index.html" target="_blank" rel="noopener"><i class="bi bi-eye"></i> <span class="d-none d-sm-inline">View site</span></a>
+        </div>
+      </header>
+
+      <main class="app-content">
+
+        <!-- ================= OVERVIEW ================= -->
+        <section data-pane="overview">
+          <div class="welcome">
+            <div>
+              <p class="mb-1 opacity-75" id="todayText"></p>
+              <h2 class="h3 mb-1" id="greeting">Welcome back</h2>
+              <p class="mb-0 opacity-75">Here is how your website looks right now.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-light btn-pill px-3" type="button" data-goto="services"><i class="bi bi-tags"></i> Edit prices</button>
+              <button class="btn btn-outline-light btn-pill px-3" type="button" data-goto="photos"><i class="bi bi-cloud-upload"></i> Upload photos</button>
+            </div>
+          </div>
+
+          <div id="seedCard" class="panel panel-highlight mb-4 d-none">
+            <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+              <span class="panel-icon"><i class="bi bi-magic"></i></span>
+              <div class="flex-grow-1">
+                <h3 class="h6 mb-1">First time here? Start with the default data</h3>
+                <p class="mb-0 small text-muted">Loads the 6 services, Solwezi service areas, working hours and FAQ. Prices start empty (“Ask for quote”) until you fill them in.</p>
+              </div>
+              <button id="seedBtn" class="btn btn-primary btn-pill px-4" type="button"><i class="bi bi-database-add"></i> Load default data</button>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4" id="statCards"></div>
+
+          <div class="row g-4">
+            <div class="col-xl-7">
+              <div class="panel h-100">
+                <div class="panel-head">
+                  <span class="panel-icon"><i class="bi bi-list-check"></i></span>
+                  <div class="flex-grow-1"><h3 class="h6 mb-0">Setup checklist</h3><p class="small text-muted mb-0">Finish these to make your website look complete.</p></div>
+                  <span class="progress-ring" id="setupPercent">0%</span>
+                </div>
+                <div class="progress mb-3" role="progressbar" aria-label="Setup progress" style="height:8px"><div class="progress-bar" id="setupBar" style="width:0%"></div></div>
+                <ul class="checklist list-unstyled mb-0" id="checklist"></ul>
+              </div>
+            </div>
+            <div class="col-xl-5">
+              <div class="panel h-100">
+                <div class="panel-head">
+                  <span class="panel-icon"><i class="bi bi-lightning-charge"></i></span>
+                  <div><h3 class="h6 mb-0">Quick actions</h3><p class="small text-muted mb-0">Common jobs in one tap.</p></div>
+                </div>
+                <div class="quick-grid">
+                  <button type="button" class="quick" data-add-service="car"><i class="bi bi-car-front"></i><span>Add car service</span></button>
+                  <button type="button" class="quick" data-add-service="home"><i class="bi bi-house-add"></i><span>Add home service</span></button>
+                  <button type="button" class="quick" data-goto="photos"><i class="bi bi-images"></i><span>Add gallery photos</span></button>
+                  <button type="button" class="quick" data-goto="business"><i class="bi bi-clock"></i><span>Edit hours &amp; FAQ</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PRICES & SERVICES ================= -->
+        <section data-pane="services" hidden>
+          <div class="panel p-0 overflow-hidden">
+            <div class="table-toolbar">
+              <div class="filter-chips" role="group" aria-label="Filter services">
+                <button type="button" class="chip active" data-filter="all">All <span id="cntAll"></span></button>
+                <button type="button" class="chip" data-filter="car"><i class="bi bi-car-front"></i> Car <span id="cntCar"></span></button>
+                <button type="button" class="chip" data-filter="home"><i class="bi bi-house"></i> Home <span id="cntHome"></span></button>
+              </div>
+              <div class="dropdown">
+                <button class="btn btn-primary btn-sm btn-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-lg"></i> Add service</button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                  <li><button class="dropdown-item" type="button" data-add-service="car"><i class="bi bi-car-front me-2 text-primary"></i> Car service</button></li>
+                  <li><button class="dropdown-item" type="button" data-add-service="home"><i class="bi bi-house me-2 text-primary"></i> Home service</button></li>
+                </ul>
+              </div>
+            </div>
+            <div class="svc-table-head d-none d-md-grid">
+              <span>Service</span><span>Prices</span><span>On website</span><span class="text-end">Actions</span>
+            </div>
+            <div id="serviceList"></div>
+          </div>
+          <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle"></i> Leave a price empty to show “Ask for quote”. Use the switch to hide a service from the website without deleting it.</p>
+        </section>
+
+        <!-- ================= PHOTOS ================= -->
+        <section data-pane="photos" hidden>
+          <div class="info-banner mb-4"><i class="bi bi-magic"></i> Photos are resized and compressed automatically on your device before saving (max 1200 px, under ~300 KB), so they load fast for your customers.</div>
+
+          <div class="panel mb-4">
+            <div class="panel-head"><span class="panel-icon"><i class="bi bi-image"></i></span><div><h3 class="h6 mb-0">Banner &amp; logo</h3><p class="small text-muted mb-0">The big photo at the top of the website and your logo.</p></div></div>
+            <div class="row g-3">
+              <div class="col-lg-8"><div id="heroSlot" class="h-100"></div></div>
+              <div class="col-lg-4"><div id="logoSlot" class="h-100"></div></div>
+            </div>
+          </div>
+
+          <div class="panel mb-4">
+            <div class="panel-head"><span class="panel-icon"><i class="bi bi-grid-3x3-gap"></i></span><div><h3 class="h6 mb-0">Service photos</h3><p class="small text-muted mb-0">One photo per service, shown on its price card.</p></div></div>
+            <div id="serviceSlots" class="row g-3"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="panel-icon"><i class="bi bi-images"></i></span><div><h3 class="h6 mb-0">Gallery</h3><p class="small text-muted mb-0">Before &amp; after photos of your work. Add several at once.</p></div></div>
+            <label class="dropzone dropzone-lg mb-3">
+              <input id="galleryFiles" type="file" class="visually-hidden" accept="image/*" multiple>
+              <i class="bi bi-cloud-arrow-up"></i>
+              <span><strong>Click to choose photos</strong> or drag them here</span>
+              <small>JPG, PNG or WebP · you can pick several</small>
+            </label>
+            <div id="galleryQueue"></div>
+            <div class="text-center">
+              <button id="galleryUploadBtn" class="btn btn-primary btn-pill px-4 d-none mb-3" type="button"><i class="bi bi-cloud-upload"></i> Upload all</button>
+            </div>
+            <div id="galleryList"></div>
+          </div>
+        </section>
+
+        <!-- ================= REVIEWS ================= -->
+        <section data-pane="reviews" hidden>
+          <div class="info-banner mb-4"><i class="bi bi-chat-heart"></i> When a happy customer sends you feedback (WhatsApp, SMS or in person), add it here. Ask them first if you may show their first name. The reviews section appears on the website as soon as one review is switched on.</div>
+          <div class="panel p-0 overflow-hidden">
+            <div class="table-toolbar">
+              <div id="reviewStats" class="small text-muted"></div>
+              <button id="addReviewBtn" class="btn btn-primary btn-sm btn-pill px-3" type="button"><i class="bi bi-plus-lg"></i> Add review</button>
+            </div>
+            <div id="reviewList"></div>
+          </div>
+          <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle"></i> Use the switch to hide a review without deleting it. Reviews with a lower “Order” number are shown first.</p>
+        </section>
+
+        <!-- ================= BUSINESS INFO ================= -->
+        <section data-pane="business" hidden>
+          <form id="businessForm" novalidate>
+            <div class="panel mb-4">
+              <div class="panel-head"><span class="panel-icon"><i class="bi bi-telephone"></i></span><div><h3 class="h6 mb-0">Contact &amp; hours</h3><p class="small text-muted mb-0">Used on every Call and WhatsApp button on the website.</p></div></div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="bizPhone" class="form-label">Phone number (shown on site)</label>
+                  <div class="input-group"><span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input id="bizPhone" class="form-control" placeholder="+260 974 286 757" required maxlength="30">
+                    <div class="invalid-feedback">Enter a phone number with country code, e.g. +260 974 286 757.</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="bizWhatsapp" class="form-label">WhatsApp number (digits only)</label>
+                  <div class="input-group"><span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+                    <input id="bizWhatsapp" class="form-control" placeholder="260974286757" required maxlength="20" inputmode="numeric">
+                    <div class="invalid-feedback">Digits only, starting with the country code (260…), no + or spaces.</div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label for="bizHours" class="form-label">Working hours</label>
+                  <textarea id="bizHours" class="form-control" rows="3" maxlength="300"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+              <div class="col-xl-5">
+                <div class="panel h-100">
+                  <div class="panel-head"><span class="panel-icon"><i class="bi bi-geo-alt"></i></span><div><h3 class="h6 mb-0">Service areas</h3><p class="small text-muted mb-0">Shown on the site and in the booking form.</p></div></div>
+                  <div id="areaEditor"></div>
+                  <div class="input-group">
+                    <input id="newArea" class="form-control" placeholder="Add an area, e.g. Mapalo" maxlength="60">
+                    <button id="addAreaBtn" class="btn btn-outline-primary" type="button"><i class="bi bi-plus-lg"></i> Add</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-7">
+                <div class="panel h-100">
+                  <div class="panel-head"><span class="panel-icon"><i class="bi bi-question-circle"></i></span><div><h3 class="h6 mb-0">FAQ</h3><p class="small text-muted mb-0">Questions and answers near the bottom of the site.</p></div></div>
+                  <div id="faqEditor"></div>
+                  <button id="addFaqBtn" class="btn btn-outline-primary btn-sm btn-pill" type="button"><i class="bi bi-plus-lg"></i> Add question</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="save-bar">
+              <span class="small text-muted d-none d-sm-inline">Changes go live as soon as you save.</span>
+              <button class="btn btn-primary btn-pill px-4" type="submit"><i class="bi bi-check2"></i> Save business info</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Service editor (slides in from the right) -->
+  <div class="offcanvas offcanvas-end svc-drawer" tabindex="-1" id="svcDrawer" aria-labelledby="svcDrawerTitle">
+    <div class="offcanvas-header">
+      <div>
+        <p class="crumb mb-0" id="svcDrawerSub">Edit service</p>
+        <h2 class="offcanvas-title h5 mb-0" id="svcDrawerTitle">Service</h2>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0" id="svcDrawerBody"></div>
+  </div>
+
+  <!-- Review editor (slides in from the right) -->
+  <div class="offcanvas offcanvas-end svc-drawer" tabindex="-1" id="revDrawer" aria-labelledby="revDrawerTitle">
+    <div class="offcanvas-header">
+      <div>
+        <p class="crumb mb-0" id="revDrawerSub">Edit review</p>
+        <h2 class="offcanvas-title h5 mb-0" id="revDrawerTitle">Review</h2>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0" id="revDrawerBody"></div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="toasts" aria-live="polite"></div>
+
+  <!-- Confirm dialog -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 rounded-4">
+        <div class="modal-body text-center p-4">
+          <span class="auth-logo auth-logo-danger"><i class="bi bi-exclamation-triangle"></i></span>
+          <h2 class="modal-title h5" id="confirmTitle">Are you sure?</h2>
+          <p class="text-muted small mb-4" id="confirmText"></p>
+          <div class="d-flex gap-2 justify-content-center">
+            <button type="button" class="btn btn-light btn-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger btn-pill px-4" id="confirmOk">Yes, continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

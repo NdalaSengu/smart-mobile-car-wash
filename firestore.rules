@@ -1,0 +1,123 @@
+rules_version = '2';
+
+// Security rules for Master-Mobile Care Wash.
+// - Everyone can READ services, images, settings and visible reviews (the public website).
+// - Only the ONE admin (UID stored in config/admin) can write.
+// - config/admin can only be read by the admin and never written from the
+//   website (you edit it by hand in the Firebase console).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/config/admin)
+        && request.auth.uid == get(/databases/$(database)/documents/config/admin).data.uid;
+    }
+
+    function optString(d, key, maxLen) {
+      return !(key in d) || (d[key] is string && d[key].size() <= maxLen);
+    }
+
+    function validPrice(v) {
+      return v == null || ((v is int || v is float) && v > 0 && v <= 1000000);
+    }
+
+    function validCarPrices(p) {
+      return p is map
+        && p.keys().hasOnly(['small', 'suv', 'van', 'truck'])
+        && validPrice(p.get('small', null))
+        && validPrice(p.get('suv', null))
+        && validPrice(p.get('van', null))
+        && validPrice(p.get('truck', null));
+    }
+
+    function validService(d) {
+      return d.keys().hasOnly(['name', 'category', 'description', 'bullets', 'active', 'order',
+                               'imageId', 'prices', 'price', 'unit', 'updatedAt'])
+        && d.keys().hasAll(['name', 'category', 'active', 'order'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 100
+        && d.category in ['car', 'home']
+        && optString(d, 'description', 500)
+        && (!('bullets' in d) || (d.bullets is list && d.bullets.size() <= 20))
+        && d.active is bool
+        && (d.order is int || d.order is float)
+        && optString(d, 'imageId', 100)
+        && (!('updatedAt' in d) || d.updatedAt is timestamp)
+        && (d.category == 'car'
+              ? ('prices' in d && validCarPrices(d.prices))
+              : (validPrice(d.get('price', null)) && optString(d, 'unit', 40)));
+    }
+
+    function validImage(d) {
+      return d.keys().hasOnly(['dataUrl', 'type', 'caption', 'label', 'order', 'createdAt'])
+        && d.keys().hasAll(['dataUrl', 'type'])
+        && d.dataUrl is string
+        && d.dataUrl.size() <= 900000                       // keeps each doc under the 1 MB limit
+        && d.dataUrl.matches('data:image/(webp|jpeg|png);base64,.+')
+        && d.type in ['service', 'gallery', 'hero', 'logo']
+        && optString(d, 'caption', 200)
+        && (!('label' in d) || d.label in ['', 'before', 'after'])
+        && (!('order' in d) || d.order is int || d.order is float)
+        && (!('createdAt' in d) || d.createdAt is timestamp);
+    }
+
+    function validBusiness(d) {
+      return d.keys().hasOnly(['phone', 'whatsapp', 'areas', 'hours', 'faq', 'updatedAt'])
+        && optString(d, 'phone', 30)
+        && (!('whatsapp' in d) || (d.whatsapp is string && d.whatsapp.matches('[0-9]{8,15}')))
+        && (!('areas' in d) || (d.areas is list && d.areas.size() <= 60))
+        && optString(d, 'hours', 300)
+        && (!('faq' in d) || (d.faq is list && d.faq.size() <= 50))
+        && (!('updatedAt' in d) || d.updatedAt is timestamp);
+    }
+
+    function validReview(d) {
+      return d.keys().hasOnly(['name', 'area', 'service', 'rating', 'text', 'active', 'order', 'createdAt', 'updatedAt'])
+        && d.keys().hasAll(['name', 'rating', 'text', 'active'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && d.rating is int && d.rating >= 1 && d.rating <= 5
+        && d.text is string && d.text.size() > 0 && d.text.size() <= 600
+        && optString(d, 'area', 60)
+        && optString(d, 'service', 100)
+        && d.active is bool
+        && (!('order' in d) || d.order is int || d.order is float)
+        && (!('createdAt' in d) || d.createdAt is timestamp)
+        && (!('updatedAt' in d) || d.updatedAt is timestamp);
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validService(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /images/{imageId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validImage(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && docId == 'business' && validBusiness(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Visitors only see reviews that are switched on ("Show on website").
+    match /reviews/{reviewId} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow create, update: if isAdmin() && validReview(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /config/admin {
+      allow read: if isAdmin();
+      allow write: if false;   // edit this document only in the Firebase console
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

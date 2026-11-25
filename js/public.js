@@ -424,9 +424,40 @@ function bindBookingForm() {
     const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
     // (window.open with "noopener" always returns null, so clear opener manually)
     const win = window.open(url, "_blank");
+    resetBookingForm(form);
     if (win) win.opener = null;
     else window.location.href = url;
   });
+
+  // Hide the "sent" note as soon as someone starts a new booking
+  $("#bookingForm").addEventListener("input", () => { const n = $("#bookingSent"); if (n) n.hidden = true; });
+
+  // Coming back to the page with the browser's Back button: start with an empty form
+  window.addEventListener("pageshow", (e) => { if (e.persisted) resetBookingForm($("#bookingForm"), false); });
+}
+
+// Clear every field after the booking has been handed to WhatsApp
+function resetBookingForm(form, showThanks = true) {
+  form.reset();
+  form.classList.remove("was-validated");
+  for (const el of form.elements) if (el.setCustomValidity) el.setCustomValidity("");
+  $("#bAreaOtherWrap").classList.add("d-none");
+  $("#bAreaOther").required = false;
+  const size = $("#bSize");
+  size.innerHTML = ""; size.dataset.keys = "";   // rebuilt empty by updateBookingUI
+  updateBookingUI();
+  let note = $("#bookingSent");
+  if (!note) {
+    note = document.createElement("div");
+    note.id = "bookingSent";
+    note.className = "alert alert-success small mt-3 mb-0";
+    note.setAttribute("role", "status");
+    form.append(note);
+  }
+  note.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Your booking message is ready in WhatsApp. Tap <strong>Send</strong> there and we will confirm your time.`;
+  note.hidden = !showThanks;
+  clearTimeout(resetBookingForm.timer);
+  if (showThanks) resetBookingForm.timer = setTimeout(() => { note.hidden = true; }, 12000);
 }
 
 function buildMessage() {

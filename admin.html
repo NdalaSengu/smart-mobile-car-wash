@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
   <link href="vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="css/style.css?v=2" rel="stylesheet">
+  <link href="css/style.css?v=3" rel="stylesheet">
 </head>
 <body class="admin-body">
 
@@ -169,7 +169,7 @@
               <span class="panel-icon"><i class="bi bi-magic"></i></span>
               <div class="flex-grow-1">
                 <h3 class="h6 mb-1">First time here? Start with the default data</h3>
-                <p class="mb-0 small text-muted">Loads the 6 services, Solwezi service areas, working hours and FAQ. Prices start empty (“Ask for quote”) until you fill them in.</p>
+                <p class="mb-0 small text-muted">Loads the 6 services, Solwezi service areas, working hours and FAQ. Prices start empty until you fill them in.</p>
               </div>
               <button id="seedBtn" class="btn btn-primary btn-pill px-4" type="button"><i class="bi bi-database-add"></i> Load default data</button>
             </div>
@@ -228,7 +228,7 @@
             </div>
             <div id="serviceList"></div>
           </div>
-          <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle"></i> Leave a price empty to show “Ask for quote”. Use the switch to hide a service from the website without deleting it.</p>
+          <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle"></i> Leave a price empty to hide it on the website (for car services, only the vehicle sizes with a price are shown). Use the switch to hide a service from the website without deleting it.</p>
         </section>
 
         <!-- ================= PHOTOS ================= -->
@@ -379,6 +379,6 @@
   </div>
 
   <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
-  <script type="module" src="js/admin.js?v=2"></script>
+  <script type="module" src="js/admin.js?v=3"></script>
 </body>
 </html>

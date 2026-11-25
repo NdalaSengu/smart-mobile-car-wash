@@ -38,7 +38,7 @@ export const DEFAULT_FAQ = [
   },
   {
     q: "How much does it cost?",
-    a: "Prices depend on the service and the size of your vehicle. You can see our current prices in the Services section. If a price says “Ask for quote”, send us a message and we will tell you."
+    a: "Prices depend on the service and the size of your vehicle. You can see our current prices in the Services section. If you do not see a price for your vehicle or service, send us a message and we will tell you."
   },
   {
     q: "Which areas do you cover?",

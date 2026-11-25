@@ -93,7 +93,7 @@ When it finishes, it prints your website address, e.g. `https://your-project-id.
 1. Open `https://your-project-id.web.app/admin.html` and log in with the email and password from step 2.
 2. Click **Load default data** (only the first time). This creates the 6 services, the Solwezi service areas, working hours and FAQ.
 3. **Prices & services** tab: type your prices in Kwacha for each vehicle size (car services) or the price + unit (home services). Click **Save** on each service.
-   - An empty price shows **“Ask for quote”** on the website.
+   - An empty price is hidden on the website. For car services, only the vehicle sizes with a price are shown.
    - Switch off **Show on website** to hide a service.
 4. **Photos** tab: upload the hero banner, your logo, a photo for each service and gallery photos. You will see a preview and the compressed size before saving.
 5. **Reviews** tab: when a happy customer sends you feedback, add it here (ask them first if you may show their first name). The reviews section appears on the website once at least one review is switched on.
@@ -118,7 +118,7 @@ When it finishes, it prints your website address, e.g. `https://your-project-id.
 ```bash
 npx serve .
 ```
-Open the address it prints. Until your config is pasted, the site shows the default services with “Ask for quote” and a friendly notice. All WhatsApp and Call buttons still work.
+Open the address it prints. Until your config is pasted, the site shows the default services (without prices) and a friendly notice. All WhatsApp and Call buttons still work.
 
 **Full local test with fake data (Firebase Emulator Suite, needs Java):**
 ```bash

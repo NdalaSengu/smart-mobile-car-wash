@@ -380,14 +380,14 @@ function priceValue(v) {
 function priceSummary(s) {
   if (s.category === "car") {
     const vals = VEHICLE_SIZES.map(({ key }) => s.prices?.[key]).filter((v) => typeof v === "number" && v > 0);
-    if (!vals.length) return `<span class="text-muted fst-italic">Ask for quote</span>`;
+    if (!vals.length) return `<span class="text-muted fst-italic">No prices yet</span>`;
     const min = Math.min(...vals), max = Math.max(...vals);
     const range = min === max ? kw(min) : `${kw(min)} – ${kw(max)}`;
     return `<strong>${range}</strong><small class="d-block text-muted">${vals.length} of 4 sizes priced</small>`;
   }
   return typeof s.price === "number" && s.price > 0
     ? `<strong>${kw(s.price)}</strong><small class="d-block text-muted">${esc(s.unit || "")}</small>`
-    : `<span class="text-muted fst-italic">Ask for quote</span>`;
+    : `<span class="text-muted fst-italic">No price yet</span>`;
 }
 
 function kw(n) { return "K" + Number(n).toLocaleString("en-US"); }
@@ -450,14 +450,14 @@ function serviceFormHtml(s) {
         </div>
       </div>
       <div class="drawer-section">
-        <p class="drawer-title">Prices <span class="text-muted fw-normal">– empty = “Ask for quote”</span></p>
+        <p class="drawer-title">Prices <span class="text-muted fw-normal">(leave empty to hide that size)</span></p>
         <div class="car-prices ${isCar ? "" : "d-none"}">
           <div class="price-grid">
             ${VEHICLE_SIZES.map(({ key, label }) => `
               <div>
                 <label class="form-label small" for="p-${key}-${k}">${esc(label)}</label>
                 <div class="input-group"><span class="input-group-text">K</span>
-                  <input class="form-control" id="p-${key}-${k}" name="svcPrice_${key}" type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" value="${priceValue(s.prices?.[key])}">
+                  <input class="form-control" id="p-${key}-${k}" name="svcPrice_${key}" type="number" min="0" step="any" inputmode="decimal" placeholder="Not offered" value="${priceValue(s.prices?.[key])}">
                   <div class="invalid-feedback">Positive number or empty.</div>
                 </div>
               </div>`).join("")}
@@ -468,7 +468,7 @@ function serviceFormHtml(s) {
             <div>
               <label class="form-label small" for="hp-${k}">Price</label>
               <div class="input-group"><span class="input-group-text">K</span>
-                <input class="form-control" id="hp-${k}" name="svcPrice" type="number" min="0" step="any" inputmode="decimal" placeholder="Quote" value="${priceValue(s.price)}">
+                <input class="form-control" id="hp-${k}" name="svcPrice" type="number" min="0" step="any" inputmode="decimal" placeholder="No price" value="${priceValue(s.price)}">
                 <div class="invalid-feedback">Positive number or empty.</div>
               </div>
             </div>
@@ -588,7 +588,7 @@ function readServiceForm(card) {
 
   if (!ok) {
     $(".is-invalid", f)?.focus();
-    throw new Error("Please fix the highlighted fields. Prices must be positive numbers (or empty for “Ask for quote”).");
+    throw new Error("Please fix the highlighted fields. Prices must be positive numbers (or empty).");
   }
   return data;
 }
@@ -694,7 +694,7 @@ function renderOverview() {
 
   const stats = [
     { icon: "bi-tags", label: "Services on website", value: `${active.length}`, sub: `of ${services.length} total`, go: "services" },
-    { icon: "bi-cash-coin", label: "Services with prices", value: `${priced.length}`, sub: `${active.length - priced.length} show “Ask for quote”`, go: "services" },
+    { icon: "bi-cash-coin", label: "Services with prices", value: `${priced.length}`, sub: `${active.length - priced.length} without a price`, go: "services" },
     { icon: "bi-images", label: "Gallery photos", value: `${state.gallery.length}`, sub: `${withPhoto.length} service photos`, go: "photos" },
     { icon: "bi-geo-alt", label: "Service areas", value: `${state.settings.areas.length}`, sub: `${state.settings.faq.length} FAQ items`, go: "business" }
   ];

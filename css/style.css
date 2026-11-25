@@ -138,6 +138,7 @@ h2 { font-size: clamp(1.6rem, 4vw, 2.35rem); font-weight: 700; margin-bottom: .7
 .price-table td { text-align: right; font-weight: 700; color: var(--mm-navy); white-space: nowrap; padding-right: 0; }
 .service-body .price-big { font-size: 1.9rem; font-weight: 700; color: var(--mm-blue); line-height: 1.1; }
 .service-body .price-big small { font-size: .85rem; font-weight: 500; color: var(--mm-muted); }
+.hs-price[hidden] { display: none !important; }
 .quote, .service-body .quote { color: var(--mm-blue); font-weight: 600; font-style: normal; font-size: 1rem; }
 .svc-home .service-img { aspect-ratio: 16 / 8; }
 .quote::before { content: "\F431"; font-family: "bootstrap-icons"; margin-right: .3rem; font-size: .85em; }

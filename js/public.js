@@ -32,9 +32,15 @@ function withTimeout(promise, ms) {
 function priceText(service, sizeKey) {
   if (service.category === "car") {
     const v = service.prices?.[sizeKey];
-    return hasPrice(v) ? formatKwacha(v) : "Ask for quote";
+    return hasPrice(v) ? formatKwacha(v) : "";
   }
-  return hasPrice(service.price) ? `${formatKwacha(service.price)}${service.unit ? " " + service.unit : ""}` : "Ask for quote";
+  return hasPrice(service.price) ? `${formatKwacha(service.price)}${service.unit ? " " + service.unit : ""}` : "";
+}
+
+// Vehicle sizes that have a price for this service (all sizes if none are priced yet).
+function pricedSizes(s) {
+  const priced = VEHICLE_SIZES.filter(({ key }) => hasPrice(s?.prices?.[key]));
+  return priced.length ? priced : VEHICLE_SIZES;
 }
 
 function lowestPrice(s) {
@@ -56,16 +62,15 @@ function serviceCard(s) {
   if (s.category === "car") {
     priceHtml = carHasAnyPrice(s)
       ? `<table class="table table-sm price-table"><caption class="visually-hidden">Prices for ${esc(s.name)} by vehicle size</caption><tbody>${
-          VEHICLE_SIZES.map(({ key, label }) => {
-            const v = s.prices?.[key];
-            return `<tr><th scope="row">${esc(label)}</th><td>${hasPrice(v) ? esc(formatKwacha(v)) : '<span class="quote">Ask for quote</span>'}</td></tr>`;
-          }).join("")
+          VEHICLE_SIZES.filter(({ key }) => hasPrice(s.prices?.[key])).map(({ key, label }) =>
+            `<tr><th scope="row">${esc(label)}</th><td>${esc(formatKwacha(s.prices[key]))}</td></tr>`
+          ).join("")
         }</tbody></table>`
-      : `<p class="quote mb-3">Ask for quote</p>`;
+      : "";
   } else {
     priceHtml = hasPrice(s.price)
       ? `<p class="price-big mb-3">${esc(formatKwacha(s.price))} <small>${esc(s.unit || "")}</small></p>`
-      : `<p class="quote mb-3">Ask for quote</p>`;
+      : "";
   }
   const colClass = s.category === "car" ? "col-sm-6 col-xl-3" : "col-md-6 col-lg-5";
   const from = lowestPrice(s);
@@ -107,9 +112,9 @@ function renderServices() {
   // "From K…" prices in the hero card
   for (const [cat, id] of [["car", "heroCarFrom"], ["home", "heroHomeFrom"]]) {
     const prices = active.filter((s) => s.category === cat).map(lowestPrice).filter(Boolean);
-    $("#" + id).innerHTML = prices.length
-      ? `<small>from</small>${esc(formatKwacha(Math.min(...prices)))}`
-      : `<small>price</small>On request`;
+    const slot = $("#" + id);
+    slot.innerHTML = prices.length ? `<small>from</small>${esc(formatKwacha(Math.min(...prices)))}` : "";
+    slot.hidden = !prices.length;
   }
 
   // Booking dropdown
@@ -334,17 +339,30 @@ function updateBookingUI() {
   sizeWrap.classList.toggle("d-none", !isCar);
   size.required = isCar;
 
+  // Only offer the vehicle sizes this service has prices for
+  const sizes = pricedSizes(isCar ? s : null);
+  const sizeKeys = sizes.map((v) => v.key).join(",");
+  if (size.dataset.keys !== sizeKeys) {
+    const keep = size.value;
+    size.innerHTML = (sizes.length > 1 ? `<option value="">Choose vehicle size…</option>` : "") +
+      sizes.map((v) => `<option value="${v.key}">${esc(v.label)}</option>`).join("");
+    size.dataset.keys = sizeKeys;
+    if (sizes.some((v) => v.key === keep)) size.value = keep;
+  }
+
   const box = $("#priceBox");
   if (!s) { box.classList.add("d-none"); return; }
   let text;
   if (isCar) {
-    text = size.value ? `Price for ${s.name} (${VEHICLE_SIZES.find((v) => v.key === size.value).label}): ${priceText(s, size.value)}`
-                      : `Choose your vehicle size to see the price.`;
+    const p = size.value ? priceText(s, size.value) : "";
+    text = p ? `Price for ${s.name} (${VEHICLE_SIZES.find((v) => v.key === size.value).label}): ${p}`
+             : carHasAnyPrice(s) && !size.value ? `Choose your vehicle size to see the price.` : "";
   } else {
-    text = `Price for ${s.name}: ${priceText(s)}`;
+    const p = priceText(s);
+    text = p ? `Price for ${s.name}: ${p}` : "";
   }
   box.textContent = text;
-  box.classList.remove("d-none");
+  box.classList.toggle("d-none", !text);
 }
 
 function toLocalInputValue(d) {
@@ -426,7 +444,8 @@ function buildMessage() {
     `*Service:* ${s.name} (${s.category === "car" ? "Car" : "Home"})`
   ];
   if (s.category === "car") lines.push(`*Vehicle size:* ${VEHICLE_SIZES.find((v) => v.key === sizeKey).label}`);
-  lines.push(`*Price on website:* ${priceText(s, sizeKey)}`);
+  const price = priceText(s, sizeKey);
+  if (price) lines.push(`*Price on website:* ${price}`);
   lines.push(`*Preferred date/time:* ${when}`);
   const notes = $("#bNotes").value.trim();
   if (notes) lines.push(`*Notes:* ${notes}`);
@@ -479,7 +498,7 @@ async function init() {
     renderServices();
     showNotice(`<i class="bi bi-info-circle me-1"></i> We couldn't load our latest prices right now.
       Please <a data-wa-link href="https://wa.me/${digitsOnly(state.settings.whatsapp) || DEFAULT_WHATSAPP}" target="_blank" rel="noopener">message us on WhatsApp</a>
-      or <a data-tel-link href="tel:+${digitsOnly(state.settings.phone)}">call us</a> for a quote.`);
+      or <a data-tel-link href="tel:+${digitsOnly(state.settings.phone)}">call us</a> for our prices.`);
   }
   lazyGallery();
 }
